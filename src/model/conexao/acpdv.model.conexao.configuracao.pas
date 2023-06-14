@@ -17,6 +17,9 @@ type
     procedure Comprimir;
     procedure Descomprimir;
 
+    {Criado para que possa validar e setar uma configuração provisória}
+    procedure CreateConfig;
+
     CONST
       ARQUIVOINI = 'CONFIGURACAO.CONF';
       TEMPINI = 'TEMP';
@@ -65,7 +68,26 @@ end;
 constructor TConfiguracao.Create(Path: String);
 begin
   FPath := Path;
+
+  //tratativa no caso da não existencia do arquivo de configuração
+  if not FileExists(FPath+ARQUIVOINI) then
+    CreateConfig;
+
   FArquivo := TIniFile.Create(FPath+ARQUIVOINI);
+end;
+
+procedure TConfiguracao.CreateConfig;
+begin
+  var lArquivo := TStringList.Create;
+  try
+    lArquivo.Add('[CONFIGURACAO]');
+    lArquivo.Add('DRIVEID=SQLite');
+    lArquivo.Add('DATABASE=');// Caminho para o banco de dados provisorio
+    lArquivo.SaveToFile(FPath+ARQUIVOINI);
+    Comprimir;
+  finally
+    lArquivo.DisposeOf;
+  end;
 end;
 
 procedure TConfiguracao.Descomprimir;
